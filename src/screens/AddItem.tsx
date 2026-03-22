@@ -1,27 +1,20 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
+  View, Text, TextInput, TouchableOpacity,
+  ScrollView, StyleSheet, Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { colors, spacing, radius, typography } from '../theme';
-import type { AddItemForm, AppStackParamList, InventoryCategory } from '../types';
+import { spacing, radius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import type { AddItemForm, AppStackParamList, Category } from '../types';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AddItem'>;
 
-const CATEGORIES: InventoryCategory[] = [
-  'Electronics',
-  'Peripherals',
-  'Accessories',
-  'Furniture',
-];
+const CATEGORIES: Category[] = ['Electronics', 'Peripherals', 'Accessories', 'Furniture'];
 
 const AddItem: React.FC<Props> = ({ navigation }) => {
+  const { colors } = useTheme();
+
   const [form, setForm] = useState<AddItemForm>({
     name: '', sku: '', category: '', qty: '',
     minQty: '', price: '', location: '',
@@ -50,16 +43,11 @@ const AddItem: React.FC<Props> = ({ navigation }) => {
     keyboardType?: 'default' | 'numeric' | 'email-address';
   }
 
-  const Field: React.FC<FieldProps> = ({
-    label,
-    field,
-    placeholder,
-    keyboardType = 'default',
-  }) => (
+  const Field: React.FC<FieldProps> = ({ label, field, placeholder, keyboardType = 'default' }) => (
     <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
         placeholder={placeholder}
         placeholderTextColor={colors.textMuted}
         keyboardType={keyboardType}
@@ -71,30 +59,37 @@ const AddItem: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ScrollView
-      style={styles.screen}
+      style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={[styles.backText, { color: colors.primary }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={typography.h2}>Add Inventory Item</Text>
+        <Text style={[styles.heading, { color: colors.textPrimary }]}>Add Inventory Item</Text>
       </View>
 
-      <Field label="Item Name *"     field="name"     placeholder="e.g. MacBook Pro 14 inch" />
-      <Field label="SKU"             field="sku"      placeholder="e.g. EL-011" />
+      <Field label="Item Name *"      field="name"     placeholder="e.g. MacBook Pro 14 inch" />
+      <Field label="SKU"              field="sku"      placeholder="e.g. EL-011" />
 
-      {/* Category picker */}
       <View style={styles.fieldWrap}>
-        <Text style={styles.label}>Category *</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>Category *</Text>
         <View style={styles.chips}>
           {CATEGORIES.map(cat => (
             <TouchableOpacity
               key={cat}
-              style={[styles.chip, form.category === cat && styles.chipActive]}
+              style={[
+                styles.chip,
+                { borderColor: colors.border, backgroundColor: colors.card },
+                form.category === cat && { backgroundColor: colors.primary, borderColor: colors.primary },
+              ]}
               onPress={() => set('category', cat)}
             >
-              <Text style={[styles.chipText, form.category === cat && styles.chipTextActive]}>
+              <Text style={[
+                styles.chipText,
+                { color: colors.textSecondary },
+                form.category === cat && { color: '#FFFFFF', fontWeight: '600' },
+              ]}>
                 {cat}
               </Text>
             </TouchableOpacity>
@@ -102,13 +97,13 @@ const AddItem: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      <Field label="Quantity *"       field="qty"      placeholder="e.g. 10"     keyboardType="numeric" />
-      <Field label="Minimum Qty"      field="minQty"   placeholder="e.g. 5"      keyboardType="numeric" />
-      <Field label="Price (₹)"        field="price"    placeholder="e.g. 1999"   keyboardType="numeric" />
-      <Field label="Storage Location" field="location" placeholder="e.g. Shelf A1" />
+      <Field label="Quantity *"        field="qty"      placeholder="e.g. 10"      keyboardType="numeric" />
+      <Field label="Minimum Qty"       field="minQty"   placeholder="e.g. 5"       keyboardType="numeric" />
+      <Field label="Price (₹)"         field="price"    placeholder="e.g. 1999"    keyboardType="numeric" />
+      <Field label="Storage Location"  field="location" placeholder="e.g. Shelf A1" />
 
       <TouchableOpacity
-        style={styles.saveBtn}
+        style={[styles.saveBtn, { backgroundColor: colors.primary }]}
         onPress={handleSave}
         activeOpacity={0.8}
       >
@@ -121,39 +116,17 @@ const AddItem: React.FC<Props> = ({ navigation }) => {
 export default AddItem;
 
 const styles = StyleSheet.create({
-  screen:         { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.md },
-  header:         { paddingTop: spacing.xl, paddingBottom: spacing.lg },
-  back:           { marginBottom: spacing.sm },
-  backText:       { color: colors.primary, fontWeight: '600', fontSize: 15 },
-  fieldWrap:      { marginBottom: spacing.md },
-  label:          { ...typography.label, marginBottom: spacing.xs },
-  input: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  chips:          { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
-  },
-  chipActive:     { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText:       { fontSize: 13, color: colors.textSecondary },
-  chipTextActive: { color: colors.white, fontWeight: '600' },
-  saveBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.md + 2,
-    alignItems: 'center',
-    marginTop: spacing.lg,
-  },
-  saveBtnText:    { color: colors.white, fontSize: 16, fontWeight: '700' },
+  screen:      { flex: 1, paddingHorizontal: spacing.md },
+  header:      { paddingTop: spacing.xl, paddingBottom: spacing.md },
+  back:        { marginBottom: spacing.sm },
+  backText:    { fontWeight: '600', fontSize: 15 },
+  heading:     { fontSize: 22, fontWeight: '700' },
+  fieldWrap:   { marginBottom: spacing.md },
+  label:       { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: spacing.xs },
+  input:       { borderWidth: 1, borderRadius: radius.md, padding: spacing.md, fontSize: 15 },
+  chips:       { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  chip:        { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: 999, borderWidth: 1 },
+  chipText:    { fontSize: 13 },
+  saveBtn:     { borderRadius: radius.md, padding: spacing.md + 2, alignItems: 'center', marginTop: spacing.lg },
+  saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 });

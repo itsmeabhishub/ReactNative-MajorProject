@@ -10,17 +10,19 @@ import {
   Switch,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { colors, spacing, radius, typography } from '../theme';
+import { spacing, radius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 import { currentUser, usersData } from '../data/mockData';
 import type { RootStackParamList, User } from '../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const Settings: React.FC<Props> = ({ navigation }) => {
-  const [orgName,       setOrgName]   = useState<string>(currentUser.organization);
-  const [inviteEmail,   setInvite]    = useState<string>('');
-  const [notifications, setNotif]     = useState<boolean>(true);
-  const [darkMode,      setDark]      = useState<boolean>(false);
+  const { colors, isDark, toggleDark } = useTheme();
+
+  const [orgName, setOrgName] = useState<string>(currentUser.organization);
+  const [inviteEmail, setInvite] = useState<string>('');
+  const [notifications, setNotif] = useState<boolean>(true);
 
   const handleSave = (): void => {
     Alert.alert('Settings Saved', 'Your preferences have been updated.');
@@ -48,38 +50,74 @@ const Settings: React.FC<Props> = ({ navigation }) => {
 
   return (
     <ScrollView
-      style={styles.screen}
+      style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <Text style={[typography.h2, styles.heading]}>Settings</Text>
+      <Text style={[styles.heading, { color: colors.textPrimary }]}>
+        Settings
+      </Text>
 
       {/* Profile card */}
-      <View style={styles.profileCard}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{currentUser.avatar}</Text>
+      <View
+        style={[
+          styles.profileCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={[styles.avatar, { backgroundColor: colors.primaryLight }]}>
+          <Text style={[styles.avatarText, { color: colors.primary }]}>
+            {currentUser.avatar}
+          </Text>
         </View>
         <View>
-          <Text style={styles.profileName}>{currentUser.name}</Text>
-          <Text style={styles.profileMeta}>{currentUser.email}</Text>
-          <Text style={styles.profileMeta}>{currentUser.role}</Text>
+          <Text style={[styles.profileName, { color: colors.textPrimary }]}>
+            {currentUser.name}
+          </Text>
+          <Text style={[styles.profileMeta, { color: colors.textSecondary }]}>
+            {currentUser.email}
+          </Text>
+          <Text style={[styles.profileMeta, { color: colors.textSecondary }]}>
+            {currentUser.role}
+          </Text>
         </View>
       </View>
 
       {/* Organization */}
-      <Text style={styles.sectionTitle}>Organization</Text>
-      <Text style={styles.label}>Organization Name</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Organization
+      </Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>
+        Organization Name
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.textPrimary,
+          },
+        ]}
         value={orgName}
         onChangeText={setOrgName}
         placeholderTextColor={colors.textMuted}
       />
 
       {/* Invite */}
-      <Text style={styles.label}>Invite Team Member</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>
+        Invite Team Member
+      </Text>
       <View style={styles.row}>
         <TextInput
-          style={[styles.input, { flex: 1 }]}
+          style={[
+            styles.input,
+            {
+              flex: 1,
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.textPrimary,
+            },
+          ]}
           placeholder="colleague@company.com"
           placeholderTextColor={colors.textMuted}
           value={inviteEmail}
@@ -87,49 +125,81 @@ const Settings: React.FC<Props> = ({ navigation }) => {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <TouchableOpacity style={styles.inviteBtn} onPress={handleInvite}>
+        <TouchableOpacity
+          style={[styles.inviteBtn, { backgroundColor: colors.primary }]}
+          onPress={handleInvite}
+        >
           <Text style={styles.inviteBtnText}>Send</Text>
         </TouchableOpacity>
       </View>
 
       {/* Team list */}
-      <Text style={styles.sectionTitle}>Team Members</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Team Members
+      </Text>
       {usersData.map((u: User) => (
-        <View key={u.id} style={styles.userRow}>
-          <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>{u.avatar}</Text>
+        <View
+          key={u.id}
+          style={[styles.userRow, { borderBottomColor: colors.border }]}
+        >
+          <View
+            style={[
+              styles.userAvatar,
+              { backgroundColor: colors.primaryLight },
+            ]}
+          >
+            <Text style={[styles.userAvatarText, { color: colors.primary }]}>
+              {u.avatar}
+            </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.userName}>{u.name}</Text>
-            <Text style={styles.userMeta}>{u.email} · {u.role}</Text>
+            <Text style={[styles.userName, { color: colors.textPrimary }]}>
+              {u.name}
+            </Text>
+            <Text style={[styles.userMeta, { color: colors.textMuted }]}>
+              {u.email} · {u.role}
+            </Text>
           </View>
-          <Text style={[styles.statusText, u.status === 'Active' && styles.active]}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: u.status === 'Active' ? colors.success : colors.danger,
+            }}
+          >
             {u.status}
           </Text>
         </View>
       ))}
 
       {/* Preferences */}
-      <Text style={styles.sectionTitle}>Preferences</Text>
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Push Notifications</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Preferences
+      </Text>
+
+      <View style={[styles.toggleRow, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.toggleLabel, { color: colors.textPrimary }]}>
+          Push Notifications
+        </Text>
         <Switch
           value={notifications}
           onValueChange={setNotif}
           trackColor={{ true: colors.primary }}
         />
       </View>
-      <View style={styles.toggleRow}>
-        <Text style={styles.toggleLabel}>Dark Mode</Text>
+
+      <View style={[styles.toggleRow, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.toggleLabel, { color: colors.textPrimary }]}>
+          Dark Mode
+        </Text>
         <Switch
-          value={darkMode}
-          onValueChange={setDark}
+          value={isDark}
+          onValueChange={toggleDark}
           trackColor={{ true: colors.primary }}
         />
       </View>
 
       <TouchableOpacity
-        style={styles.saveBtn}
+        style={[styles.saveBtn, { backgroundColor: colors.primary }]}
         onPress={handleSave}
         activeOpacity={0.8}
       >
@@ -137,11 +207,13 @@ const Settings: React.FC<Props> = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.logoutBtn}
+        style={[styles.logoutBtn, { borderColor: colors.danger }]}
         onPress={handleLogout}
         activeOpacity={0.8}
       >
-        <Text style={styles.logoutBtnText}>Log Out</Text>
+        <Text style={[styles.logoutBtnText, { color: colors.danger }]}>
+          Log Out
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -150,87 +222,102 @@ const Settings: React.FC<Props> = ({ navigation }) => {
 export default Settings;
 
 const styles = StyleSheet.create({
-  screen:       { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.md },
-  heading:      { paddingTop: spacing.xl, paddingBottom: spacing.md },
+  screen: { flex: 1, paddingHorizontal: spacing.md },
+  heading: {
+    fontSize: 22,
+    fontWeight: '700',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+  },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.card,
     borderRadius: radius.md,
+    borderWidth: 1,
     padding: spacing.md,
     marginBottom: spacing.lg,
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   avatar: {
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center', justifyContent: 'center',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  avatarText:    { fontSize: 16, fontWeight: '700', color: colors.primary },
-  profileName:   { fontSize: 16, fontWeight: '700', color: colors.textPrimary },
-  profileMeta:   { fontSize: 13, color: colors.textSecondary },
-  sectionTitle:  { ...typography.h3, marginTop: spacing.lg, marginBottom: spacing.sm },
-  label:         { ...typography.label, marginBottom: spacing.xs, marginTop: spacing.sm },
+  avatarText: { fontSize: 16, fontWeight: '700' },
+  profileName: { fontSize: 16, fontWeight: '700' },
+  profileMeta: { fontSize: 13 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
+  },
   input: {
-    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.md,
     padding: spacing.md,
     fontSize: 15,
-    color: colors.textPrimary,
   },
-  row:           { flexDirection: 'row', gap: spacing.sm, alignItems: 'center', marginTop: spacing.sm },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
   inviteBtn: {
-    backgroundColor: colors.primary,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
-  inviteBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },
+  inviteBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     gap: spacing.sm,
   },
   userAvatar: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center', justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  userAvatarText: { fontSize: 12, fontWeight: '700', color: colors.primary },
-  userName:       { fontSize: 14, fontWeight: '600', color: colors.textPrimary },
-  userMeta:       { fontSize: 12, color: colors.textMuted },
-  statusText:     { fontSize: 12, color: colors.danger },
-  active:         { color: colors.success },
+  userAvatarText: { fontSize: 12, fontWeight: '700' },
+  userName: { fontSize: 14, fontWeight: '600' },
+  userMeta: { fontSize: 12 },
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  toggleLabel:    { fontSize: 15, color: colors.textPrimary },
+  toggleLabel: { fontSize: 15 },
   saveBtn: {
-    backgroundColor: colors.primary,
     borderRadius: radius.md,
     padding: spacing.md + 2,
     alignItems: 'center',
     marginTop: spacing.xl,
   },
-  saveBtnText:    { color: colors.white, fontSize: 16, fontWeight: '700' },
+  saveBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   logoutBtn: {
     borderWidth: 1,
-    borderColor: colors.danger,
     borderRadius: radius.md,
     padding: spacing.md + 2,
     alignItems: 'center',
     marginTop: spacing.sm,
   },
-  logoutBtnText:  { color: colors.danger, fontSize: 16, fontWeight: '700' },
+  logoutBtnText: { fontSize: 16, fontWeight: '700' },
 });
