@@ -1,8 +1,16 @@
 // ─── Inventory ────────────────────────────────────────────────────────────────
+export type Category =
+  | 'Electronics'
+  | 'Peripherals'
+  | 'Accessories'
+  | 'Furniture';
+
+export type InventoryCategory = 'All' | Category;
+
 export interface InventoryItem {
   id: string;
   name: string;
-  category: string;
+  category: Category;
   qty: number;
   minQty: number;
   price: number;
@@ -10,13 +18,6 @@ export interface InventoryItem {
   sku: string;
   lastUpdated: string;
 }
-
-export type InventoryCategory =
-  | 'All'
-  | 'Electronics'
-  | 'Peripherals'
-  | 'Accessories'
-  | 'Furniture';
 
 // ─── Tickets ──────────────────────────────────────────────────────────────────
 export type TicketStatus   = 'Open' | 'In Progress' | 'Closed';
@@ -101,7 +102,7 @@ export interface BadgeProps {
 export interface AddItemForm {
   name: string;
   sku: string;
-  category: string;
+  category: Category | '';
   qty: string;
   minQty: string;
   price: string;

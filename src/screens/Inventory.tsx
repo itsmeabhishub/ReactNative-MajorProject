@@ -1,75 +1,111 @@
-import React, {useState, useMemo} from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity,
-  TextInput, StyleSheet, ListRenderItemInfo,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  ListRenderItem,
 } from 'react-native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Badge from '../components/Badge';
-import {colors, spacing, radius, typography} from '../theme';
-import {inventoryData} from '../data/mockData';
-import {InventoryItem, InventoryCategory, AppStackParamList} from '../types';
+import { spacing, radius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { inventoryData } from '../data/mockData';
+import type { InventoryItem, AppStackParamList, Category } from '../types';
 
-type Props = {
-  navigation: NativeStackNavigationProp<AppStackParamList, 'MainTabs'>;
-};
+type Props = NativeStackScreenProps<AppStackParamList, 'MainTabs'>;
 
-const CATEGORIES: InventoryCategory[] = [
-  'All', 'Electronics', 'Peripherals', 'Accessories', 'Furniture',
+const CATEGORIES: Array<'All' | Category> = [
+  'All',
+  'Electronics',
+  'Peripherals',
+  'Accessories',
+  'Furniture',
 ];
 
-const Inventory: React.FC<Props> = ({navigation}) => {
-  const [search,  setSearch] = useState<string>('');
-  const [filter,  setFilter] = useState<InventoryCategory>('All');
-  const [data]               = useState<InventoryItem[]>(inventoryData);
+const Inventory: React.FC<Props> = ({ navigation }) => {
+  const { colors } = useTheme();
+  const [search, setSearch] = useState<string>('');
+  const [activeFilter, setFilter] = useState<'All' | Category>('All');
+  const [localData] = useState<InventoryItem[]>(inventoryData);
 
   const filtered = useMemo<InventoryItem[]>(() => {
-    return data.filter(item => {
+    return localData.filter(item => {
       const matchSearch =
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.sku.toLowerCase().includes(search.toLowerCase());
-      const matchCat = filter === 'All' || item.category === filter;
+      const matchCat = activeFilter === 'All' || item.category === activeFilter;
       return matchSearch && matchCat;
     });
-  }, [search, filter, data]);
+  }, [search, activeFilter, localData]);
 
-  const renderItem = ({item}: ListRenderItemInfo<InventoryItem>) => {
+  const renderItem: ListRenderItem<InventoryItem> = ({ item }) => {
     const isLow = item.qty < item.minQty;
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: colors.card }]}>
         <View style={styles.cardTop}>
-          <View style={styles.cardLeft}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.sku}>{item.sku} · {item.location}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.itemName, { color: colors.textPrimary }]}>
+              {item.name}
+            </Text>
+            <Text style={[styles.sku, { color: colors.textMuted }]}>
+              {item.sku} · {item.location}
+            </Text>
           </View>
-          <View style={styles.cardRight}>
-            <Text style={[styles.qty, isLow && styles.qtyLow]}>{item.qty} units</Text>
+          <View style={{ alignItems: 'flex-end', gap: 4 }}>
+            <Text
+              style={[
+                styles.qty,
+                { color: isLow ? colors.danger : colors.success },
+              ]}
+            >
+              {item.qty} units
+            </Text>
             {isLow && <Badge label="Low" />}
           </View>
         </View>
         <View style={styles.cardBottom}>
-          <Text style={styles.meta}>{item.category}</Text>
-          <Text style={styles.meta}>Rs.{item.price.toLocaleString()}</Text>
-          <Text style={styles.meta}>Min: {item.minQty}</Text>
+          <Text style={[styles.meta, { color: colors.textSecondary }]}>
+            Category: {item.category}
+          </Text>
+          <Text style={[styles.meta, { color: colors.textSecondary }]}>
+            ₹{item.price.toLocaleString()}
+          </Text>
+          <Text style={[styles.meta, { color: colors.textSecondary }]}>
+            Min: {item.minQty}
+          </Text>
         </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={typography.h2}>Inventory</Text>
+        <Text style={[styles.heading, { color: colors.textPrimary }]}>
+          Inventory
+        </Text>
         <TouchableOpacity
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate('AddItem')}
-          activeOpacity={0.8}>
+          activeOpacity={0.8}
+        >
           <Text style={styles.addBtnText}>+ Add Item</Text>
         </TouchableOpacity>
       </View>
 
       <TextInput
-        style={styles.search}
-        placeholder="Search by name or SKU..."
+        style={[
+          styles.search,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.textPrimary,
+          },
+        ]}
+        placeholder="Search by name or SKU…"
         placeholderTextColor={colors.textMuted}
         value={search}
         onChangeText={setSearch}
@@ -79,9 +115,23 @@ const Inventory: React.FC<Props> = ({navigation}) => {
         {CATEGORIES.map(cat => (
           <TouchableOpacity
             key={cat}
-            style={[styles.chip, filter === cat && styles.chipActive]}
-            onPress={() => setFilter(cat)}>
-            <Text style={[styles.chipText, filter === cat && styles.chipTextActive]}>
+            style={[
+              styles.chip,
+              { borderColor: colors.border, backgroundColor: colors.card },
+              activeFilter === cat && {
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              },
+            ]}
+            onPress={() => setFilter(cat)}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                { color: colors.textSecondary },
+                activeFilter === cat && { color: '#FFFFFF', fontWeight: '600' },
+              ]}
+            >
               {cat}
             </Text>
           </TouchableOpacity>
@@ -92,36 +142,70 @@ const Inventory: React.FC<Props> = ({navigation}) => {
         data={filtered}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>No items found.</Text>}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        ListEmptyComponent={
+          <Text style={[styles.empty, { color: colors.textMuted }]}>
+            No items match your search.
+          </Text>
+        }
       />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  screen:         {flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.md},
-  header:         {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: spacing.xl, paddingBottom: spacing.md},
-  addBtn:         {backgroundColor: colors.primary, paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2, borderRadius: radius.full},
-  addBtnText:     {color: colors.white, fontWeight: '700', fontSize: 14},
-  search:         {backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: spacing.sm + 2, fontSize: 14, color: colors.textPrimary, marginBottom: spacing.sm},
-  chips:          {flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md},
-  chip:           {paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.xs, borderRadius: radius.full, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card},
-  chipActive:     {backgroundColor: colors.primary, borderColor: colors.primary},
-  chipText:       {fontSize: 13, color: colors.textSecondary},
-  chipTextActive: {color: colors.white, fontWeight: '600'},
-  list:           {paddingBottom: 32},
-  card:           {backgroundColor: colors.card, borderRadius: radius.md, padding: spacing.md, marginBottom: spacing.sm, elevation: 1},
-  cardTop:        {flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm},
-  cardLeft:       {flex: 1},
-  cardRight:      {alignItems: 'flex-end', gap: 4},
-  itemName:       {fontSize: 15, fontWeight: '600', color: colors.textPrimary},
-  sku:            {fontSize: 12, color: colors.textMuted, marginTop: 2},
-  qty:            {fontSize: 15, fontWeight: '700', color: colors.success},
-  qtyLow:         {color: colors.danger},
-  cardBottom:     {flexDirection: 'row', gap: spacing.md},
-  meta:           {fontSize: 12, color: colors.textSecondary},
-  empty:          {textAlign: 'center', marginTop: 40, color: colors.textMuted},
-});
-
 export default Inventory;
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, paddingHorizontal: spacing.md },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+  },
+  heading: { fontSize: 22, fontWeight: '700' },
+  addBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: 999,
+  },
+  addBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
+  search: {
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing.sm + 2,
+    fontSize: 14,
+    marginBottom: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  chip: {
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  chipText: { fontSize: 13 },
+  card: {
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    elevation: 1,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  itemName: { fontSize: 15, fontWeight: '600' },
+  sku: { fontSize: 12, marginTop: 2 },
+  qty: { fontSize: 15, fontWeight: '700' },
+  cardBottom: { flexDirection: 'row', gap: spacing.md },
+  meta: { fontSize: 12 },
+  empty: { textAlign: 'center', marginTop: 40 },
+});
