@@ -12,7 +12,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { spacing, radius } from '../theme';
 import { useTheme } from '../context/ThemeContext';
-import type { RootStackParamList } from '../types';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -34,7 +34,7 @@ const Login: React.FC<Props> = ({ navigation }) => {
     setTimeout(() => {
       setLoading(false);
       if (email.toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD) {
-        navigation.replace('App');
+        navigation.replace('Main');
       } else {
         Alert.alert(
           'Invalid credentials',
