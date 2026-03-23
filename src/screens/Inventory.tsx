@@ -8,14 +8,19 @@ import {
   StyleSheet,
   ListRenderItem,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Badge from '../components/Badge';
 import { spacing, radius } from '../theme';
 import { useTheme } from '../context/ThemeContext';
 import { inventoryData } from '../data/mockData';
-import type { InventoryItem, AppStackParamList, Category } from '../types';
+import type { InventoryItem, Category } from '../types';
+import type { InventoryStackParamList } from '../navigation/AppNavigator';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'MainTabs'>;
+type NavProp = NativeStackNavigationProp<
+  InventoryStackParamList,
+  'InventoryList'
+>;
 
 const CATEGORIES: Array<'All' | Category> = [
   'All',
@@ -25,8 +30,10 @@ const CATEGORIES: Array<'All' | Category> = [
   'Furniture',
 ];
 
-const Inventory: React.FC<Props> = ({ navigation }) => {
+const Inventory: React.FC = () => {
   const { colors } = useTheme();
+  const navigation = useNavigation<NavProp>();
+
   const [search, setSearch] = useState<string>('');
   const [activeFilter, setFilter] = useState<'All' | Category>('All');
   const [localData] = useState<InventoryItem[]>(inventoryData);
