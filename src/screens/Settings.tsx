@@ -9,16 +9,19 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { spacing, radius } from '../theme';
 import { useTheme } from '../context/ThemeContext';
 import { currentUser, usersData } from '../data/mockData';
-import type { RootStackParamList, User } from '../types';
+import type { User } from '../types';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const Settings: React.FC<Props> = ({ navigation }) => {
+const Settings: React.FC = () => {
   const { colors, isDark, toggleDark } = useTheme();
+  const navigation = useNavigation<NavProp>();
 
   const [orgName, setOrgName] = useState<string>(currentUser.organization);
   const [inviteEmail, setInvite] = useState<string>('');
